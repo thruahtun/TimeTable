@@ -6,7 +6,12 @@ import { Input } from "./components/ui/input";
 import { Label } from "./components/ui/label";
 import { Select } from "./components/ui/select";
 import { Textarea } from "./components/ui/textarea";
-import { createTimetableEntry, deleteTimetableEntry, getTimetable } from "./lib/api";
+import {
+  createTimetableEntry,
+  deleteTimetableEntry,
+  getApiConfigurationError,
+  getTimetable
+} from "./lib/api";
 import { DayOfWeek, TimetableEntry, TimetableEntryInput, days } from "./types/timetable";
 
 const dayLabels: Record<DayOfWeek, string> = {
@@ -37,6 +42,14 @@ function App() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
+    const configError = getApiConfigurationError();
+
+    if (configError) {
+      setIsApiConnected(false);
+      setErrorMessage(configError);
+      return;
+    }
+
     getTimetable()
       .then((data) => {
         setEntries(data);
@@ -45,7 +58,7 @@ function App() {
       })
       .catch(() => {
         setIsApiConnected(false);
-        setErrorMessage("Could not connect to the database. Start the API with npm run dev.");
+        setErrorMessage("Could not connect to the API. Check that the backend is deployed and running.");
       });
   }, []);
 
@@ -67,6 +80,13 @@ function App() {
       location: form.location?.trim() || null,
       note: form.note?.trim() || null
     };
+
+    const configError = getApiConfigurationError();
+
+    if (configError) {
+      setErrorMessage(configError);
+      return;
+    }
 
     setIsSaving(true);
     setErrorMessage(null);

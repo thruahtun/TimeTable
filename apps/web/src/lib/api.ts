@@ -1,6 +1,36 @@
 import type { TimetableEntry, TimetableEntryInput } from "../types/timetable";
 
-const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:4000";
+function resolveApiUrl() {
+  const configured = import.meta.env.VITE_API_URL?.trim();
+
+  if (configured) {
+    return configured.replace(/\/$/, "");
+  }
+
+  if (import.meta.env.DEV) {
+    return "http://localhost:4000";
+  }
+
+  return "";
+}
+
+const API_URL = resolveApiUrl();
+
+export function getApiConfigurationError() {
+  if (import.meta.env.DEV) {
+    return null;
+  }
+
+  if (!API_URL) {
+    return "VITE_API_URL is not set. Add your public API URL in Vercel project settings, then redeploy.";
+  }
+
+  if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(API_URL)) {
+    return "VITE_API_URL points to localhost. Browsers block that from a deployed site. Use your public API URL instead.";
+  }
+
+  return null;
+}
 
 export async function getTimetable() {
   const response = await fetch(`${API_URL}/api/timetable`);

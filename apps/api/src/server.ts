@@ -14,6 +14,7 @@ const allowedOrigins = new Set(
     .map((origin) => origin.trim())
     .filter(Boolean)
 );
+const allowsVercelOrigins = [...allowedOrigins].some((origin) => origin.includes(".vercel.app"));
 
 function isAllowedOrigin(origin: string | undefined) {
   if (!origin) {
@@ -24,7 +25,15 @@ function isAllowedOrigin(origin: string | undefined) {
     return true;
   }
 
-  return /^http:\/\/localhost:\d+$/.test(origin);
+  if (/^http:\/\/localhost:\d+$/.test(origin)) {
+    return true;
+  }
+
+  if (allowsVercelOrigins && /^https:\/\/[\w.-]+\.vercel\.app$/.test(origin)) {
+    return true;
+  }
+
+  return false;
 }
 
 app.use(
