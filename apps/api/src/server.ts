@@ -50,12 +50,6 @@ app.use(
 );
 app.use(express.json());
 
-app.get("/api/timetable", (_req, res) => {
-  res.json({
-    message: "Time Table API is running 🚀"
-  });
-});
-
 app.get("/health", (_req, res) => {
   res.json({ ok: true });
 });
