@@ -50,6 +50,12 @@ app.use(
 );
 app.use(express.json());
 
+app.get("/", (_req, res) => {
+  res.json({
+    message: "Time Table API is running 🚀"
+  });
+});
+
 app.get("/health", (_req, res) => {
   res.json({ ok: true });
 });
@@ -118,3 +124,5 @@ app.use((error: unknown, _req: express.Request, res: express.Response, _next: ex
 app.listen(port, () => {
   console.log(`API running on http://localhost:${port}`);
 });
+
+export default app;
