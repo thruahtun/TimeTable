@@ -47,30 +47,30 @@ A small full-stack timetable app built with React, TypeScript, Express, PostgreS
 The web app runs on `http://localhost:5173`.
 The API runs on `http://localhost:4000`.
 
-## Deploy to Vercel + Render
+## Deploy to Vercel
 
-The Vercel frontend **cannot** call `localhost:4000`. Browsers block public HTTPS sites from reaching your local machine.
+The frontend and API can run on the same Vercel project. You do **not** need `VITE_API_URL` in production.
 
-### 1. Deploy the API (Render)
+### 1. Create a hosted PostgreSQL database
 
-1. Create a free PostgreSQL database on [Neon](https://neon.tech) or [Supabase](https://supabase.com).
-2. Deploy this repo on [Render](https://render.com) using `render.yaml`, or manually:
-   - **Build command:** `npm install && npm run prisma:generate && npx prisma db push --schema apps/api/prisma/schema.prisma && npm run build -w apps/api`
-   - **Start command:** `npm run start -w apps/api`
-3. Set environment variables on Render:
-   - `DATABASE_URL` = your hosted PostgreSQL URL
-   - `WEB_ORIGIN` = `https://time-table-web.vercel.app`
-
-Copy your Render API URL, for example `https://girlfriend-timetable-api.onrender.com`.
+Use [Neon](https://neon.tech) or [Supabase](https://supabase.com) and copy the connection string.
 
 ### 2. Configure Vercel
 
-In your Vercel project → **Settings → Environment Variables**, add:
+Set **Root Directory** to `apps/web`, then add this environment variable:
 
 | Name | Value |
 |------|-------|
-| `VITE_API_URL` | `https://your-api.onrender.com` |
+| `DATABASE_URL` | your hosted PostgreSQL connection string |
 
-Set the **Root Directory** to `apps/web`, then redeploy.
+Redeploy. The build runs `prisma db push` and creates the tables automatically.
 
-After redeploy, the site should show **Connected to database** and save entries to Prisma.
+### 3. Local development
+
+Keep using the Express API on port 4000:
+
+```bash
+npm run dev
+```
+
+Set `VITE_API_URL=http://localhost:4000` in `apps/web/.env`.

@@ -22,11 +22,11 @@ export function getApiConfigurationError() {
   }
 
   if (!API_URL) {
-    return "VITE_API_URL is not set. Add your public API URL in Vercel project settings, then redeploy.";
+    return null;
   }
 
   if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(API_URL)) {
-    return "VITE_API_URL points to localhost. Browsers block that from a deployed site. Use your public API URL instead.";
+    return "VITE_API_URL points to localhost. Browsers block that from a deployed site. Remove it to use the built-in Vercel API, or set a public API URL.";
   }
 
   return null;

@@ -58,7 +58,7 @@ function App() {
       })
       .catch(() => {
         setIsApiConnected(false);
-        setErrorMessage("Could not connect to the API. Check that the backend is deployed and running.");
+        setErrorMessage("Could not connect to the API. Add DATABASE_URL in Vercel project settings, then redeploy.");
       });
   }, []);
 
