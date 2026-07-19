@@ -50,7 +50,7 @@ app.use(
 );
 app.use(express.json());
 
-app.get("/", (_req, res) => {
+app.get("/api/timetable", (_req, res) => {
   res.json({
     message: "Time Table API is running 🚀"
   });
