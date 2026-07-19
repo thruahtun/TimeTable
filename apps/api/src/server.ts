@@ -8,8 +8,37 @@ import { timetableEntrySchema } from "./timetable.schema.js";
 const app = express();
 const port = Number(process.env.PORT ?? 4000);
 const webOrigin = process.env.WEB_ORIGIN ?? "http://localhost:5173";
+const allowedOrigins = new Set(
+  webOrigin
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean)
+);
 
-app.use(cors({ origin: webOrigin }));
+function isAllowedOrigin(origin: string | undefined) {
+  if (!origin) {
+    return true;
+  }
+
+  if (allowedOrigins.has(origin)) {
+    return true;
+  }
+
+  return /^http:\/\/localhost:\d+$/.test(origin);
+}
+
+app.use(
+  cors({
+    origin(origin, callback) {
+      if (isAllowedOrigin(origin)) {
+        callback(null, origin ?? webOrigin);
+        return;
+      }
+
+      callback(new Error("Not allowed by CORS"));
+    }
+  })
+);
 app.use(express.json());
 
 app.get("/health", (_req, res) => {

@@ -19,39 +19,6 @@ const dayLabels: Record<DayOfWeek, string> = {
   SUNDAY: "Sunday"
 };
 
-const sampleEntries: TimetableEntry[] = [
-  {
-    id: "sample-1",
-    title: "Morning class",
-    day: "MONDAY",
-    startTime: "09:00",
-    endTime: "10:30",
-    location: "Main campus",
-    note: "Bring coffee and notes",
-    color: "#f472b6"
-  },
-  {
-    id: "sample-2",
-    title: "Study date",
-    day: "WEDNESDAY",
-    startTime: "15:00",
-    endTime: "17:00",
-    location: "Library",
-    note: "Quiet table near the window",
-    color: "#14b8a6"
-  },
-  {
-    id: "sample-3",
-    title: "Assignment time",
-    day: "FRIDAY",
-    startTime: "19:00",
-    endTime: "20:30",
-    location: "Home",
-    note: "Finish weekly review",
-    color: "#f59e0b"
-  }
-];
-
 const initialForm: TimetableEntryInput = {
   title: "",
   day: "MONDAY",
@@ -63,19 +30,22 @@ const initialForm: TimetableEntryInput = {
 };
 
 function App() {
-  const [entries, setEntries] = useState<TimetableEntry[]>(sampleEntries);
+  const [entries, setEntries] = useState<TimetableEntry[]>([]);
   const [form, setForm] = useState<TimetableEntryInput>(initialForm);
   const [isApiConnected, setIsApiConnected] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     getTimetable()
       .then((data) => {
-        setEntries(data.length > 0 ? data : sampleEntries);
+        setEntries(data);
         setIsApiConnected(true);
+        setErrorMessage(null);
       })
       .catch(() => {
         setIsApiConnected(false);
+        setErrorMessage("Could not connect to the database. Start the API with npm run dev.");
       });
   }, []);
 
@@ -99,27 +69,30 @@ function App() {
     };
 
     setIsSaving(true);
+    setErrorMessage(null);
 
     try {
-      if (isApiConnected) {
-        const saved = await createTimetableEntry(entryInput);
-        setEntries((current) => [...current, saved]);
-      } else {
-        setEntries((current) => [...current, { ...entryInput, id: crypto.randomUUID() }]);
-      }
-
+      const saved = await createTimetableEntry(entryInput);
+      setEntries((current) => [...current, saved]);
+      setIsApiConnected(true);
       setForm(initialForm);
+    } catch {
+      setErrorMessage("Could not save to the database. Check that the API and PostgreSQL are running.");
     } finally {
       setIsSaving(false);
     }
   }
 
   async function handleDelete(entry: TimetableEntry) {
-    if (isApiConnected && !entry.id.startsWith("sample-")) {
-      await deleteTimetableEntry(entry.id);
-    }
+    setErrorMessage(null);
 
-    setEntries((current) => current.filter((item) => item.id !== entry.id));
+    try {
+      await deleteTimetableEntry(entry.id);
+      setEntries((current) => current.filter((item) => item.id !== entry.id));
+      setIsApiConnected(true);
+    } catch {
+      setErrorMessage("Could not delete from the database. Check that the API and PostgreSQL are running.");
+    }
   }
 
   return (
@@ -135,9 +108,14 @@ function App() {
               <h1 className="text-3xl font-bold tracking-normal sm:text-4xl">Her Timetable</h1>
             </div>
             <div className="rounded-md border bg-background px-3 py-2 text-sm text-muted-foreground">
-              {isApiConnected ? "Connected to database" : "Preview mode"}
+              {isApiConnected ? "Connected to database" : "Not connected"}
             </div>
           </div>
+          {errorMessage ? (
+            <p className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+              {errorMessage}
+            </p>
+          ) : null}
         </div>
       </section>
 
